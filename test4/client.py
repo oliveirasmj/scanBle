@@ -18,20 +18,28 @@ async def post_request():
     print('POST request response code:', response.code)
     print('POST request response payload:', response.payload.decode())
 
-# GET by ID request
-async def get_by_id_request(id):
+# PUT request
+async def put_request():
     protocol = await Context.create_client_context()
-    request = Message(code=GET, uri=f'coap://localhost/services?_id={id}')
+    payload = b'{"name": "device-2-renamed"}'
+    request = Message(code=PUT, uri='coap://localhost/services/641aede88758a114d4badc40', payload=payload)
     response = await protocol.request(request).response
-    print('GET by ID request response code:', response.code)
-    print('GET by ID request response payload:', response.payload.decode())
+    print('PUT request response code:', response.code)
+    print('PUT request response payload:', response.payload.decode())
 
+# DELETE request
+async def delete_request():
+    protocol = await Context.create_client_context()
+    request = Message(code=DELETE, uri='coap://localhost/services/63fd16394f04887892593963')
+    response = await protocol.request(request).response
+    print('DELETE request response code:', response.code)
+    print('DELETE request response payload:', response.payload.decode())
 
 # run the requests
 async def main():
-    #await get_request()
-    #await post_request()
-    await get_by_id_request('63fd16394f04887892593963') # Replace with the actual ID you want to retrieve
-
+    await get_request()
+    await post_request()
+    await put_request()
+    await delete_request()
 
 asyncio.run(main())

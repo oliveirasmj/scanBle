@@ -22,7 +22,7 @@ class ServicesResource(resource.Resource):
     """
     def __init__(self):
         super().__init__()
-        self.allowed_methods = ["GET", "POST", "GET_BY_ID"]
+        self.allowed_methods = ["GET", "POST", "DELETE"]
 
     async def render_get(self, request):
         """
@@ -41,22 +41,19 @@ class ServicesResource(resource.Resource):
         response = f"Inserted service with ID: {result.inserted_id}"
         return aiocoap.Message(payload=response.encode())
     
-    async def getById(self, request, id):
+    async def render_delete(self, request):
         """
-        Handle GET requests to retrieve a service by ID
+        Handle DELETE requests to delete a service from the collection by ID
         """
-        service = mongo_collection.find_one({"_id": ObjectId(id)})
-        if service is None:
-            response = "Service not found"
-        else:
-            response = str(service)
+        service_id = request.opt.uri_path[-1]
+        result = mongo_collection.delete_one({"_id": pymongo.ObjectId(service_id)})
+        response = f"Deleted service with ID: {service_id}" if result.deleted_count > 0 else "Service not found"
         return aiocoap.Message(payload=response.encode())
 
 # Create CoAP server
 root = resource.Site()
 root.add_resource(('.well-known', 'core'), resource.WKCResource(root.get_resources_as_linkheader))
 root.add_resource(('services',), ServicesResource())
-root.add_resource(('services', 'id',), ServicesResource())
 
 async def main():
     # Start CoAP server
