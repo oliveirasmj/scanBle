@@ -45,11 +45,11 @@ async def delete_service_by_id(service_id):
 
 
 async def main():
-    await get_all_services()
-    await get_service_by_id("6425cf2e51ac4d1cb7807be9")
-    await post_new_service()
+    #await get_all_services()
+    #await get_service_by_id("6425cf2e51ac4d1cb7807be9")
+    #await post_new_service()
     await put_service_by_id("6425cf2e51ac4d1cb7807be9")
-    await delete_service_by_id("6425cf2e51ac4d1cb7807be9")
+    #await delete_service_by_id("6425cf2e51ac4d1cb7807be9")
 
 
 asyncio.run(main())

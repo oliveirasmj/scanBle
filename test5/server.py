@@ -4,6 +4,7 @@ import aiocoap
 import pymongo
 from bson.objectid import ObjectId
 
+
 # Define MongoDB connection details
 MONGODB_HOST = "localhost"
 MONGODB_PORT = 27017
@@ -39,39 +40,16 @@ class ServicesResource(resource.Resource):
         result = mongo_collection.insert_one({"name": service_data})
         response = f"Inserted service with ID: {result.inserted_id}"
         return aiocoap.Message(payload=response.encode())
-
-class ServiceByIdResource(resource.Resource):
-    """
-    CoAP resource for interacting with a specific MongoDB service by ID
-    """
-    def __init__(self, service_id):
-        super().__init__()
-        self.service_id = service_id
-        self.allowed_methods = ["GET"]
-
-    async def render_get(self, request):
+    
+    async def getById(self, request, id):
         """
-        Handle GET requests to retrieve the service with the given ID
+        Handle GET requests to retrieve a service by ID
         """
-        service = mongo_collection.find_one({"_id": ObjectId(self.service_id)})
-        response = str(service) if service else "Service not found"
-        return aiocoap.Message(payload=response.encode())
-
-class ServiceByAddressResource(resource.Resource):
-    """
-    CoAP resource for interacting with a MongoDB service by address
-    """
-    def __init__(self):
-        super().__init__()
-        self.allowed_methods = ["GET"]
-
-    async def render_get(self, request):
-        """
-        Handle GET requests to retrieve the service with the given address
-        """
-        address = request.uri_query[0]
-        service = mongo_collection.find_one({"address": address})
-        response = str(service) if service else "Service not found"
+        service = mongo_collection.find_one({"_id": ObjectId(id)})
+        if service is None:
+            response = "Service not found"
+        else:
+            response = str(service)
         return aiocoap.Message(payload=response.encode())
 
 # Create CoAP server
@@ -80,14 +58,6 @@ root.add_resource(('.well-known', 'core'), resource.WKCResource(root.get_resourc
 root.add_resource(('services',), ServicesResource())
 
 async def main():
-    # Add ServiceByIdResource resources
-    services = mongo_collection.find()
-    for service in services:
-        root.add_resource(('services', str(service["_id"])), ServiceByIdResource(str(service["_id"])))
-
-    # Add ServiceByAddressResource resource
-    root.add_resource(('services', 'address'), ServiceByAddressResource())
-
     # Start CoAP server
     protocol = await aiocoap.Context.create_server_context(root)
 
