@@ -57,22 +57,6 @@ class ServiceByIdResource(resource.Resource):
         response = str(service) if service else "Service not found"
         return aiocoap.Message(payload=response.encode())
 
-class ServiceByAddressResource(resource.Resource):
-    """
-    CoAP resource for interacting with a MongoDB service by address
-    """
-    def __init__(self):
-        super().__init__()
-        self.allowed_methods = ["GET"]
-
-    async def render_get(self, request):
-        """
-        Handle GET requests to retrieve the service with the given address
-        """
-        address = request.uri_query[0]
-        service = mongo_collection.find_one({"address": address})
-        response = str(service) if service else "Service not found"
-        return aiocoap.Message(payload=response.encode())
 
 # Create CoAP server
 root = resource.Site()
@@ -84,9 +68,6 @@ async def main():
     services = mongo_collection.find()
     for service in services:
         root.add_resource(('services', str(service["_id"])), ServiceByIdResource(str(service["_id"])))
-
-    # Add ServiceByAddressResource resource
-    root.add_resource(('services', 'address'), ServiceByAddressResource())
 
     # Start CoAP server
     protocol = await aiocoap.Context.create_server_context(root)
