@@ -3,6 +3,7 @@ import aiocoap.resource as resource
 import aiocoap
 import pymongo
 from bson.objectid import ObjectId
+import json
 
 # Define MongoDB connection details
 MONGODB_HOST = "localhost"
@@ -35,11 +36,17 @@ class ServicesResource(resource.Resource):
         """
         Handle POST requests to create a new service in the collection
         """
-        service_data = request.payload.decode()
-        service_dict = {"name": service_data, "address": "123 Main St.", "time": "12:00 PM"}
+        service_data = json.loads(request.payload.decode())
+        service_dict = {
+            "address": service_data["address"],
+            "name": service_data["name"],
+            "time": service_data["time"],
+            "services": service_data["services"]
+        }
         result = mongo_collection.insert_one(service_dict)
         response = f"Inserted service with ID: {result.inserted_id}"
         return aiocoap.Message(payload=response.encode())
+
 
 class ServiceByIdResource(resource.Resource):
     """
