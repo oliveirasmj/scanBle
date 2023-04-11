@@ -36,8 +36,7 @@ class ServicesResource(resource.Resource):
         Handle POST requests to create a new service in the collection
         """
         service_data = request.payload.decode()
-        service_dict = {"name": service_data, "address": "123 Main St.", "time": "12:00 PM"}
-        result = mongo_collection.insert_one(service_dict)
+        result = mongo_collection.insert_one({"name": service_data})
         response = f"Inserted service with ID: {result.inserted_id}"
         return aiocoap.Message(payload=response.encode())
 
