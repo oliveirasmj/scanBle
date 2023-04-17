@@ -12,12 +12,14 @@ async def get_all_services():
     print('GET all services response code:', response.code)
     print('GET all services response payload:', response.payload.decode())
 
+
 async def get_service_by_id(service_id):
     protocol = await Context.create_client_context()
     request = Message(code=GET, uri=f'coap://localhost/services/{service_id}')
     response = await protocol.request(request).response
     print(f'GET service {service_id} response code:', response.code)
     print(f'GET service {service_id} response payload:', response.payload.decode())
+
 
 async def post_new_service(payload):
     protocol = await Context.create_client_context()
@@ -35,6 +37,7 @@ async def post_new_service(payload):
     print('POST new service response code:', response.code)
     print('POST new service response payload:', response.payload.decode())
 
+
 async def delete_service_by_id(service_id):
     protocol = await Context.create_client_context()
     request = Message(code=DELETE, uri=f'coap://localhost/services/{service_id}')
@@ -42,12 +45,14 @@ async def delete_service_by_id(service_id):
     print(f'DELETE service {service_id} response code:', response.code)
     print(f'DELETE service {service_id} response payload:', response.payload.decode())
 
+
 async def count_services():
     protocol = await Context.create_client_context()
     request = Message(code=GET, uri='coap://localhost/services/count')
     response = await protocol.request(request).response
     print('GET count services response code:', response.code)
     print('GET count services response payload:', response.payload.decode())
+
 
 async def main():
     await get_all_services()
@@ -77,8 +82,9 @@ async def main():
     # Call the post_new_service() method with the payload
     await post_new_service(payload)
 
-    await delete_service_by_id("643d88ac48d664d4e4951e47")
-    
+    await delete_service_by_id("643d88c648d664d4e4951e48")
+
     await count_services()
+
 
 asyncio.run(main())
