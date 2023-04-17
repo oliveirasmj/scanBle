@@ -16,6 +16,7 @@ mongo_client = pymongo.MongoClient(host=MONGODB_HOST, port=MONGODB_PORT)
 mongo_db = mongo_client[MONGODB_DATABASE]
 mongo_collection = mongo_db[MONGODB_COLLECTION]
 
+
 class ServicesResource(resource.Resource):
     """
     CoAP resource for interacting with MongoDB services collection
@@ -55,7 +56,7 @@ class ServiceByIdResource(resource.Resource):
     def __init__(self, service_id):
         super().__init__()
         self.service_id = service_id
-        self.allowed_methods = ["GET"]
+        self.allowed_methods = ["GET", "DELETE"]
 
     async def render_get(self, request):
         """
@@ -63,6 +64,17 @@ class ServiceByIdResource(resource.Resource):
         """
         service = mongo_collection.find_one({"_id": ObjectId(self.service_id)})
         response = str(service) if service else "Service not found"
+        return aiocoap.Message(payload=response.encode())
+
+    async def render_delete(self, request):
+        """
+        Handle DELETE requests to remove the service with the given ID
+        """
+        result = mongo_collection.delete_one({"_id": ObjectId(self.service_id)})
+        if result.deleted_count == 1:
+            response = f"Deleted service with ID: {self.service_id}"
+        else:
+            response = "Service not found"
         return aiocoap.Message(payload=response.encode())
 
 
@@ -85,6 +97,7 @@ async def main():
 
     # Clean up
     protocol.shutdown()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
