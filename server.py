@@ -78,10 +78,28 @@ class ServiceByIdResource(resource.Resource):
         return aiocoap.Message(payload=response.encode())
 
 
+class ServiceCountResource(resource.Resource):
+    """
+    CoAP resource for counting the number of services in the collection
+    """
+    def __init__(self):
+        super().__init__()
+        self.allowed_methods = ["GET"]
+
+    async def render_get(self, request):
+        """
+        Handle GET requests to retrieve the count of services in the collection
+        """
+        count = mongo_collection.count_documents({})
+        response = f"Total number of services: {count}"
+        return aiocoap.Message(payload=response.encode())
+
+
 # Create CoAP server
 root = resource.Site()
 root.add_resource(('.well-known', 'core'), resource.WKCResource(root.get_resources_as_linkheader))
 root.add_resource(('services',), ServicesResource())
+root.add_resource(('services', 'count'), ServiceCountResource())
 
 async def main():
     # Add ServiceByIdResource resources
