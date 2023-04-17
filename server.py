@@ -1,6 +1,7 @@
 import asyncio
 import aiocoap.resource as resource
 import aiocoap
+import psutil
 import pymongo
 from bson.objectid import ObjectId
 import json
@@ -95,11 +96,31 @@ class ServiceCountResource(resource.Resource):
         return aiocoap.Message(payload=response.encode())
 
 
+class DiskSpaceResource(resource.Resource):
+    """
+    CoAP resource for getting disk space information
+    """
+    def __init__(self):
+        super().__init__()
+        self.allowed_methods = ["GET"]
+
+    async def render_get(self, request):
+        """
+        Handle GET requests to retrieve disk space information
+        """
+        disk_usage = psutil.disk_usage("/")
+        free_percentage = disk_usage.free / disk_usage.total * 100
+        used_percentage = disk_usage.used / disk_usage.total * 100
+        response = f"Free space: {disk_usage.free} ({free_percentage:.2f}%), Used space: {disk_usage.used} ({used_percentage:.2f}%)"
+        return aiocoap.Message(payload=response.encode())
+
+
 # Create CoAP server
 root = resource.Site()
 root.add_resource(('.well-known', 'core'), resource.WKCResource(root.get_resources_as_linkheader))
 root.add_resource(('services',), ServicesResource())
 root.add_resource(('services', 'count'), ServiceCountResource())
+root.add_resource(('diskspace',), DiskSpaceResource())
 
 async def main():
     # Add ServiceByIdResource resources
