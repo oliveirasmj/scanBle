@@ -51,7 +51,8 @@ async def calculate_disk_space():
     context = await aiocoap.Context.create_client_context()
     request = aiocoap.Message(code=aiocoap.GET, uri="coap://localhost/diskspace")
     response = await context.request(request).response
-    print(f"Disk space information: {response.payload.decode()}")
+    print('GET disk space services response code:', response.code)
+    print(f"GET disk space services response payload: {response.payload.decode()}")
 
 
 async def main():
