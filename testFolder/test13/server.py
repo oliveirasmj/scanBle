@@ -8,7 +8,6 @@ import json
 
 # Define MongoDB connection details
 MONGODB_HOST = "localhost"
-#MONGODB_HOST = "mongodb+srv://linux:1234@cluster0.7kmsjgc.mongodb.net/?retryWrites=true&w=majority"
 MONGODB_PORT = 27017
 MONGODB_DATABASE = "dbscan"
 MONGODB_COLLECTION = "services"
