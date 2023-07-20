@@ -7,7 +7,7 @@ from pymongo import MongoClient
 import datetime
 
 cluster = pymongo.MongoClient("mongodb://127.0.0.1:27017")
-# cluster = pymongo.MongoClient("mongodb+srv://linux:1234@cluster0.7kmsjgc.mongodb.net/?retryWrites=true&w=majority")
+#cluster = pymongo.MongoClient("mongodb+srv://linux:1234@cluster0.7kmsjgc.mongodb.net/?retryWrites=true&w=majority")
 db = cluster["dbscan"]
 
 class textcolor:
@@ -20,14 +20,39 @@ class textcolor:
     END = '\033[0m'
 
 def device_details_to_dict(raw_details):
-    # ... (código existente)
+    # Format device details into string. Accommodate errors caused by lack of data.
+    dict_ = {
+        'address': None,
+        'details': None,
+        'metadata': None,
+        'name': None,
+        'rssi': None
+    }
+    try:
+        dict_['address'] = raw_details.address
+    except Exception:
+        print(f'Address not found for device with the following data: {raw_details}')
+    try:
+        dict_['details'] = raw_details.details
+    except Exception:
+        print(f'Details not found for device with the following data: {raw_details}')
+    try:
+        dict_['metadata'] = raw_details.metadata
+    except Exception:
+        print(f'Metadata not found for device with the following data: {raw_details}')
+    try:
+        dict_['name'] = raw_details.name
+    except Exception:
+        print(f'Name not found for device with the following data: {raw_details}')
+    try:
+        dict_['rssi'] = raw_details.rssi
+    except Exception:
+        print(f'RSSI not found for device with the following data: {raw_details}')
 
     return dict_
 
-async def notification_handler(sender: int, data: bytearray):
-    print(f"Notification received - Characteristic handle: {sender}, Data: {data}")
 
-async def scan_and_listen():
+async def main():
     print('///////////////////////////////////////////////')
     print('Scanning for Bluetooth LE devices...')
     devices = await BleakScanner.discover()
@@ -69,13 +94,6 @@ async def scan_and_listen():
                     }
 
                     for c in service.characteristics:
-                        # Ativar notificação/indicação para cada característica
-                        try:
-                            await client.start_notify(c.handle, notification_handler)
-                            print(f"Notification/Indication enabled for Characteristic {c.uuid}")
-                        except Exception as e:
-                            print(f"Error enabling Notification/Indication for Characteristic {c.uuid}: {e}")
-
                         characteristics.append({
                             'uuid': f'{c.uuid}',
                             'subDescription': f'{c.description}',
@@ -96,13 +114,5 @@ async def scan_and_listen():
         except Exception as error:
             print(f'Exception: An error occurred while connecting to device `{device.address}`:\n\t{error}')
 
-    # Adicionar um loop para manter o programa em execução e permitir a impressão contínua de notificações
-    while True:
-        await asyncio.sleep(1)
-
-async def main():
-    await asyncio.gather(scan_and_listen())
-
 if __name__ == "__main__":
     asyncio.run(main())
-
