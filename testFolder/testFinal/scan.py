@@ -68,18 +68,18 @@ async def main():
                 print(f'\tDevice address: {textcolor.GOLD}{device.address}{textcolor.END}')
                 print(f'\tDevice name: {textcolor.GREEN}{device.name}{textcolor.END}')
 
-                # Guardar address e name na BD
-                # --------------------------------------------------------
+                #Guardar address e name na BD
+                #--------------------------------------------------------
                 collection = db["services"]
                 dado = {
                     'address': f'{device.address}',
                     'name': f'{device.name}',
-                    'time': datetime.datetime.now(),
-                    'services': []  # Lista para armazenar todas as características encontradas
+                    'time': datetime.datetime.now()
+
                 }
-                # Inserir e guardar id
+                #Inserir e guardar id
                 _id = collection.insert_one(dado)
-                # --------------------------------------------------------
+                #--------------------------------------------------------
 
                 print("\tServices:")
                 for service in client.services:
@@ -94,18 +94,20 @@ async def main():
                     }
 
                     for c in service.characteristics:
-                        characteristics.append({
+                        characteristics.append([c.uuid, c.description, c.handle, c.properties])
+                        
+                        #escrever cada servico que existe para a BD
+                        #--------------------------------------------------------
+                        serviceDetails = {
+                            'description': f'{service.description}',
+                            'service': f'{service}',
                             'uuid': f'{c.uuid}',
                             'subDescription': f'{c.description}',
                             'handle': f'{c.handle}',
                             'properties': f'{c.properties}'
-                        })
-
-                    # Armazenar todas as características encontradas para este serviço
-                    serviceDetails['characteristics'] = characteristics
-
-                    # Adicionar o serviço com todas as características à lista do dispositivo
-                    collection.update_one({'_id': _id.inserted_id}, {"$push": {"services": serviceDetails}})
+                        }
+                    collection.update_many({'_id': _id.inserted_id}, { "$push": { "services": serviceDetails } })
+                    #--------------------------------------------------------
 
                     print(f'\t\tCharacteristics: {characteristics}')
 
@@ -113,6 +115,7 @@ async def main():
             print(f'{textcolor.RED}TimeoutError:{textcolor.END} Device at address `{device.address}` timed out.')
         except Exception as error:
             print(f'Exception: An error occurred while connecting to device `{device.address}`:\n\t{error}')
+    
 
 if __name__ == "__main__":
     asyncio.run(main())
