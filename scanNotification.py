@@ -7,7 +7,7 @@ from pymongo import MongoClient
 import datetime
 
 cluster = pymongo.MongoClient("mongodb://127.0.0.1:27017")
-#cluster = pymongo.MongoClient("mongodb+srv://linux:1234@cluster0.7kmsjgc.mongodb.net/?retryWrites=true&w=majority")
+# cluster = pymongo.MongoClient("mongodb+srv://linux:1234@cluster0.7kmsjgc.mongodb.net/?retryWrites=true&w=majority")
 db = cluster["dbscan"]
 
 class textcolor:
@@ -52,7 +52,10 @@ def device_details_to_dict(raw_details):
     return dict_
 
 
-async def main():
+async def notification_handler(sender: int, data: bytearray):
+    print(f"Notification received - Characteristic handle: {sender}, Data: {data}")
+
+async def scan_and_listen():
     print('///////////////////////////////////////////////')
     print('Scanning for Bluetooth LE devices...')
     devices = await BleakScanner.discover()
@@ -94,6 +97,13 @@ async def main():
                     }
 
                     for c in service.characteristics:
+                        # Ativar notificação/indicação para cada característica
+                        try:
+                            await client.start_notify(c.handle, notification_handler)
+                            print(f"Notification/Indication enabled for Characteristic {c.uuid}")
+                        except Exception as e:
+                            print(f"Error enabling Notification/Indication for Characteristic {c.uuid}: {e}")
+
                         characteristics.append({
                             'uuid': f'{c.uuid}',
                             'subDescription': f'{c.description}',
@@ -114,5 +124,13 @@ async def main():
         except Exception as error:
             print(f'Exception: An error occurred while connecting to device `{device.address}`:\n\t{error}')
 
+    # Adicionar um loop para manter o programa em execução e permitir a impressão contínua de notificações
+    while True:
+        await asyncio.sleep(1)
+
+async def main():
+    await asyncio.gather(scan_and_listen())
+
 if __name__ == "__main__":
     asyncio.run(main())
+
