@@ -73,6 +73,15 @@ async def calculate_disk_space():
     payload_hex = " ".join(hex(b)[2:].zfill(2) for b in response.payload)
     print('Disk space information (CBOR):', payload_hex)
 
+async def perform_scan():
+    context = await Context.create_client_context()
+    uri = "coap://192.168.1.111/scan"
+    request = Message(code=GET, uri=uri)
+    response = await context.request(request).response
+    print('Scan response code:', response.code)
+    payload_hex = " ".join(hex(b)[2:].zfill(2) for b in response.payload)
+    print('Scan response payload:', payload_hex)
+
 
 async def main():
     os.system('cls' if os.name=='nt' else 'clear') # clear the screen

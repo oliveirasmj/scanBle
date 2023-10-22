@@ -121,6 +121,26 @@ class DiskSpaceResource(resource.Resource):
         response = f"Free space: {disk_usage.free} ({free_percentage:.2f}%), Used space: {disk_usage.used} ({used_percentage:.2f}%)"
         response_payload = cbor2.dumps(response)
         return aiocoap.Message(payload=response_payload)
+    
+
+class ScanResource(resource.Resource):
+    """
+    CoAP resource for scanning
+    """
+    def __init__(self):
+        super().__init__()
+        self.allowed_methods = ["GET"]
+
+    async def render_get(self, request):
+        """
+        Handle GET requests for scanning
+        """
+        # Call the perform_scan function from scan.py
+        from scan import perform_scan
+        await perform_scan()
+        response = "Scan complete"
+        response_payload = cbor2.dumps(response)
+        return aiocoap.Message(payload=response_payload)
 
 
 # Create CoAP server
@@ -129,6 +149,7 @@ root.add_resource(('.well-known', 'core'), resource.WKCResource(root.get_resourc
 root.add_resource(('services',), ServicesResource())
 root.add_resource(('services', 'count'), ServiceCountResource())
 root.add_resource(('diskspace',), DiskSpaceResource())
+root.add_resource(('scan',), ScanResource())
 
 async def main():
     # Add ServiceByIdResource resources

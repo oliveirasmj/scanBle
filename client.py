@@ -6,6 +6,7 @@ import time
 from bson.objectid import ObjectId
 import os
 import scan
+import subprocess
 
 async def get_all_services():
     protocol = await Context.create_client_context()
@@ -54,6 +55,13 @@ async def calculate_disk_space():
     print('GET disk space services response code:', response.code)
     print(f"GET disk space services response payload: {response.payload.decode()}")
 
+async def perform_scan():
+    context = await Context.create_client_context()
+    uri = "coap://192.168.1.111/scan"
+    request = Message(code=GET, uri=uri)
+    response = await context.request(request).response
+    print('Scan response code:', response.code)
+    print('Scan response payload:', response.payload.decode())
 
 async def main():
     os.system('cls' if os.name=='nt' else 'clear') # clear the screen
@@ -109,10 +117,11 @@ async def main():
             await calculate_disk_space()
             input("Press enter to continue...")
         elif choice == "7":
-            try:
-                await scan.main()
-            except scan.BLEScanError as e:
-                print(f"BLE scanning failed with error: {e}")
+            #try:
+            #    await scan.main()
+            #except scan.BLEScanError as e:
+            #    print(f"BLE scanning failed with error: {e}")
+            subprocess.run(["python3.10", "scan.py"])
             input("Press enter to continue...")
         elif choice == "0":
             break
